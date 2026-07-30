@@ -1,0 +1,81 @@
+# ──────────────────────────────────────────────
+# MCP ARR Stack — Docker Compose
+#
+# Usage:
+#   1. cp .env.example .env
+#   2. Edit .env with your service credentials
+#   3. docker compose up -d
+#   4. Check logs: docker compose logs -f mcp-arr-stack
+# ──────────────────────────────────────────────
+
+services:
+  # ── MCP ARR Stack Server ─────────────────────
+  mcp-arr-stack:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mcp-arr-stack:latest
+    container_name: mcp-arr-stack
+    restart: unless-stopped
+    # Keep stdin open for stdio transport (required by MCP SDK)
+    stdin_open: true
+    tty: true
+    # Load environment variables from .env file
+    env_file:
+      - .env
+    # Network configuration — connect to ARR stack services
+    networks:
+      - arr-network
+    # Health check
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      start_period: 5s
+      retries: 3
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "1.0"
+        reservations:
+          memory: 128M
+
+  # ── HTTP Transport variant ─────────────────────
+  mcp-arr-stack-http:
+    build: .
+    image: mcp-arr-stack:latest
+    container_name: mcp-arr-stack-http
+    restart: unless-stopped
+    # Streamable HTTP transport — no stdin_open/tty needed
+    environment:
+      - MCP_TRANSPORT=http
+      - HTTP_HOST=0.0.0.0
+      - HTTP_PORT=8080
+      - HTTP_API_KEY=${HTTP_API_KEY:-}
+      - HTTP_CORS_ORIGINS=${HTTP_CORS_ORIGINS:-*}
+    ports:
+      - "${HTTP_PORT:-8080}:${HTTP_PORT:-8080}"
+    env_file:
+      - .env
+    networks:
+      - arr-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "1.0"
+        reservations:
+          memory: 128M
+
+# ── Networks ────────────────────────────────────
+networks:
+  arr-network:
+    driver: bridge

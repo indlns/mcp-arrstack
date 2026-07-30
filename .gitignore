@@ -1,0 +1,40 @@
+# Byte-compiled / optimized
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+.zcode/
+*.swp
+*.swo
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Environment variables
+.env
+docker-compose.yml
+
+# Test coverage
+htmlcov/
+.coverage
+coverage.xml
+*.cover
+
+# pytest
+.pytest_cache/
+
+# OS
+.DS_Store
+Thumbs.db
